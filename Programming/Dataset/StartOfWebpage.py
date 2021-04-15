@@ -1,17 +1,21 @@
-import pandas as pd
-import plotly.graph_objs as go
-import plotly.offline as pyo
-# Load CVS file from Dataset folder
+import moviesBarchart
+import tvBarchart
+import GenreUS
+import choropleth
 
-df = pd.read_csv('netflix_titles.csv')
+#creates barchart that shows movies
 
+moviesBarchart.makeMovieBarchart()
 
+# Shows TV Shows produced in each country
 
-newdf = df[df['type'] == 'Movie']
+tvBarchart.makeTVShowBarGraph()
 
+#shows Genre based off of country
 
+GenreUS.showGenreUS()
 
-newdf = newdf[newdf['listed_in'] == 'Dramas'].sort_values('release_year', ascending=True)[0:9]
+choropleth.makechoropleth()
 
 
 
