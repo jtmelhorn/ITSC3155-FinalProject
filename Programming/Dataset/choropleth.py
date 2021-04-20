@@ -5,11 +5,18 @@ import country_converter as coco
 # Load CVS file from Dataset folder
 
 def makechoropleth():
+
     df = pd.read_csv('netflix_titles.csv')
     cc = coco.CountryConverter()
     tvshowDF = df[df['type'] == 'TV Show'].index
-
+    print(df.columns)
     df.drop(tvshowDF, inplace=True)
+
+    df['country'] = df['country'].str.split(', ')
+    df = df.explode('country').reset_index(drop=True)
+    cols = list(df.columns)
+    cols.append(cols.pop(cols.index('title')))
+    df = df[cols]
 
     newdf = pd.value_counts(df['country'], sort=True)
 
@@ -26,3 +33,5 @@ def makechoropleth():
 
     fig = go.Figure(data=data,layout=layout)
     pyo.plot(fig,filename='barchart.html')
+
+makechoropleth()

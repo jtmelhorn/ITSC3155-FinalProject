@@ -11,7 +11,7 @@ def makeTVShowBarGraph():
 
     df.drop(movieDF, inplace=True)
 
-    newdf = pd.value_counts(df['country'], sort=True)[0:10]
+    newdf = pd.value_counts(df['country'], sort=-True)[0:10]
 
     newdf = pd.DataFrame({'country':newdf.index, 'count':newdf.values})
 

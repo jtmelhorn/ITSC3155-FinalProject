@@ -2,7 +2,7 @@ import moviesBarchart
 import tvBarchart
 import GenreUS
 import choropleth
-
+import IndiaLineChart
 #creates barchart that shows movies
 
 moviesBarchart.makeMovieBarchart()
@@ -17,5 +17,5 @@ GenreUS.showGenreUS()
 
 choropleth.makechoropleth()
 
-
+IndiaLineChart.showGenreIndia()
 
