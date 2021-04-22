@@ -3,7 +3,7 @@ import plotly.graph_objs as go
 import plotly.offline as pyo
 
 
-def oldMovies():
+def oldMovies(actor, genre):
     df = pd.read_csv('netflix_titles.csv')
     del df['show_id']
     del df['type']
@@ -13,22 +13,32 @@ def oldMovies():
     del df['duration']
     del df['country']
     pd.set_option('display.max_colwidth', 5)
-    #take out listed columns for "listed_in"
-    df['listed_in'] = df['listed_in'].str.split(', ')
-    df = df.explode('listed_in').reset_index(drop=True)
-    cols = list(df.columns)
-    cols.append(cols.pop(cols.index('title')))
-    df = df[cols]
+
+    if(genre != 'any'):
+        #take out listed columns for "listed_in"
+        df['listed_in'] = df['listed_in'].str.split(', ')
+        df = df.explode('listed_in').reset_index(drop=True)
+        cols = list(df.columns)
+        cols.append(cols.pop(cols.index('title')))
+        df = df[cols]
+
+    if(actor != 'any'):
     #take out listed columns for "cast"
-    df['cast'] = df['cast'].str.split(', ')
-    df = df.explode('cast').reset_index(drop=True)
-    cols = list(df.columns)
-    cols.append(cols.pop(cols.index('title')))
-    df = df[cols]
+        df['cast'] = df['cast'].str.split(', ')
+        df = df.explode('cast').reset_index(drop=True)
+        cols = list(df.columns)
+        cols.append(cols.pop(cols.index('title')))
+        df = df[cols]
 
     df.dropna(inplace=True)
     df.drop_duplicates(keep = False, inplace = True)
     df = df.sort_values('release_year', ascending=True)[0:50]
+
+    if(genre != "any"):
+        df = df.loc[(df['listed_in'] == genre)]
+    if(actor != "any"):
+        df = df.loc[(df['cast'] == actor)]
+        df = df.rename(columns={'cast': 'Actor/Actress'})
 
     return(df)
 
@@ -46,4 +56,6 @@ def print_full(x):
     pd.reset_option('display.float_format')
     pd.reset_option('display.max_colwidth')
 
-print_full(oldMovies())
+
+# odlMovies(actor, movie) type 'any' for actor or movie if you want any
+print_full(oldMovies('Henry Fonda','any'))
