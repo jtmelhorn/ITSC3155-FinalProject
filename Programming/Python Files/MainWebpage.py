@@ -1,31 +1,65 @@
 import pandas as pd
+
 import plotly.graph_objs as go
 import plotly.offline as pyo
-import os
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
+import dash_table
+from dash.dependencies import Input, Output
+
+import country_converter as coco
+
 # Load CVS file from Dataset folder
 
-data = pd.read_csv('netflix_titles.csv')
 
-movieDF = pd.read_csv('netflix_titles.csv')
+def old_movies():
+    df = pd.read_csv('netflix_titles.csv')
+    del df['show_id'], df['type'], df['director'], df['date_added'], df['rating'], \
+        df['duration'], df['country']
+    pd.set_option('display.max_colwidth', 5)
 
-tvshowDF = movieDF[movieDF['type'] == 'TV Show'].index
+    df.dropna(inplace=True)
+    df.drop_duplicates(keep=False, inplace=True)
+    df = df.sort_values('release_year', ascending=True)
 
-movieDF.drop(tvshowDF, inplace=True)
+    return df
 
-newMoviedf = pd.value_counts(movieDF['country'], sort=True)[0:10]
 
-newMoviedf = pd.DataFrame({'country':newMoviedf.index, 'count':newMoviedf.values})
+def make_choropleth():
+    df = pd.read_csv('netflix_titles.csv')
+    cc = coco.CountryConverter()
+    tvshowDF = df[df['type'] == 'TV Show'].index
+    print(df.columns)
+    df.drop(tvshowDF, inplace=True)
 
-movieData = [go.Bar(x=newMoviedf['country'],y=newMoviedf['count'])]
+    df['country'] = df['country'].str.split(', ')
+    df = df.explode('country').reset_index(drop=True)
+    cols = list(df.columns)
+    cols.append(cols.pop(cols.index('title')))
+    df = df[cols]
 
-movieLayout = go.Layout(title='Amount of Netflix Available Movies Produced in Each Country (counting 1-10)', xaxis_title="States", yaxis_title="Number of confirmed cases")
+    newdf = pd.value_counts(df['country'], sort=True)
 
-#fig = go.Figure(data=movieData,layout=movieLayout)
-#pyo.plot(fig,filename='barchart.html')
+    newdf = pd.DataFrame({'country':newdf.index, 'count':newdf.values})
+
+    newdf.drop_duplicates(subset=['count'], keep='last',inplace=True)
+
+
+    newdf['code'] = coco.convert(names=newdf.country, to='ISO3')
+
+    data = [dict(type='choropleth',colorscale='Rainbow', locations = newdf['code'],z=newdf['count'],text=newdf['country'])]
+
+    layout = go.Layout(dict(title = "Movies available on Netflix Produced in Each Country-", geo = dict(showframe = True, showcoastlines=True, projection = dict(type='orthographic'))))
+
+    fig = go.Figure(data=data,layout=layout)
+    pyo.plot(fig,filename='barchart.html')
+
+makechoropleth()
+
+
+oldMoviesTable = old_movies()
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -38,17 +72,25 @@ url_bar_and_content_div = html.Div([
 layout_index = html.Div([
     html.H2('Welcome To NetAvail!'),
     html.A(html.Button('Search For Old Films', className='three columns'),
-        href='/old-films'),
-    html.Br(),html.Br(),
+           href='/old-films'),
+    html.Br(), html.Br(),
     html.A(html.Button('Most Popular Genre In Each Country', className='three columns'),
-        href='/popular-genres'),
-    html.Br(),html.Br(),
+           href='/popular-genres'),
+    html.Br(), html.Br(),
     html.A(html.Button('Most Popular Ratings In Each Country', className='three columns'),
-        href='/popular-ratings')
+           href='/popular-ratings')
 ])
 
 layout_page_1 = html.Div([
-    html.H2('Old Films')
+    html.H2('Old Films'),
+    dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in oldMoviesTable.columns],
+                         data=oldMoviesTable.to_dict('records'), style_table={'overflowX': 'auto'},
+                         filter_action='native',
+                         style_cell={
+                             'height': 'auto',
+                             # all three widths are needed
+                             'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
+                             'whiteSpace': 'normal'})
 ])
 
 layout_page_2 = html.Div([
@@ -86,24 +128,5 @@ def display_page(pathname):
         return layout_index
 
 
-# # Page 1 callbacks
-# @app.callback(Output('output-state', 'children'),
-#               Input('submit-button', 'n_clicks'),
-#               State('input-1-state', 'value'),
-#               State('input-2-state', 'value'))
-# def update_output(n_clicks, input1, input2):
-#     return ('The Button has been pressed {} times,'
-#             'Input 1 is "{}",'
-#             'and Input 2 is "{}"').format(n_clicks, input1, input2)
-
-#
-# # Page 2 callbacks
-# @app.callback(Output('page-2-display-value', 'children'),
-#               Input('page-2-dropdown', 'value'))
-# def display_value(value):
-#     print('display_value')
-#     return 'You have selected "{}"'.format(value)
-
 if __name__ == '__main__':
     app.run_server(debug=True)
-
