@@ -47,6 +47,7 @@ def old_movies():
 
     df.dropna(inplace=True)
     df.drop_duplicates(keep=False, inplace=True)
+    #convert to string
     df = df.astype(str)
     df = df.sort_values('release_year', ascending=True)
 
