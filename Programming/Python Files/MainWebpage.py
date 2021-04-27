@@ -127,7 +127,7 @@ url_bar_and_content_div = html.Div([
 ])
 
 layout_index = html.Div([
-    html.H2('Welcome To NetAvail!'),
+    html.H2(children = 'Welcome To NetAvail!',style={'textAlign':'center'}),
     html.A(html.Button('Search For Old Films', className='three columns'),
            href='/old-films'),
     html.Br(), html.Br(),
@@ -137,6 +137,8 @@ layout_index = html.Div([
     html.A(html.Button('Most Popular Genres In Each Country', className='three columns'),
            href='/popular-ratings')
 ])
+
+
 
 layout_page_1 = html.Div([
     html.H2('Old Films'),
