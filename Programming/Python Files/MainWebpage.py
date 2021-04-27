@@ -1,17 +1,42 @@
 import pandas as pd
+import numpy as np
 
 import plotly.graph_objs as go
 import plotly.offline as pyo
+import plotly.express as px
 
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
 import country_converter as coco
 
 # Load CVS file from Dataset folder
+
+df_perm = pd.read_csv('netflix_titles.csv')
+
+df = pd.read_csv('netflix_titles.csv')
+cc = coco.CountryConverter()
+tvshowDF = df[df['type'] == 'TV Show'].index
+print(df.columns)
+df.drop(tvshowDF, inplace=True)
+
+df['country'] = df['country'].str.split(', ')
+df = df.explode('country').reset_index(drop=True)
+cols = list(df.columns)
+cols.append(cols.pop(cols.index('title')))
+df = df[cols]
+
+mapDf = pd.value_counts(df['country'], sort=True)
+
+mapDf = pd.DataFrame({'country': mapDf.index, 'count': mapDf.values})
+
+mapDf.drop_duplicates(subset=['count'], keep='last', inplace=True)
+
+mapDf['code'] = coco.convert(names=mapDf.country, to='ISO3')
 
 
 def old_movies():
@@ -42,22 +67,52 @@ def make_choropleth():
 
     newdf = pd.value_counts(df['country'], sort=True)
 
-    newdf = pd.DataFrame({'country':newdf.index, 'count':newdf.values})
+    newdf = pd.DataFrame({'country': newdf.index, 'count': newdf.values})
 
-    newdf.drop_duplicates(subset=['count'], keep='last',inplace=True)
+    newdf.drop_duplicates(subset=['count'], keep='last', inplace=True)
+
+    return newdf
 
 
-    newdf['code'] = coco.convert(names=newdf.country, to='ISO3')
+def make_figure():
+    # if val_selected is None:
+    #     raise PreventUpdate
+    # else:
+    fig = px.choropleth(mapDf, locations="code",
+                        color="count",
+                        hover_name="country",
+                        projection='orthographic',
+                        title='Movies Produced',
+                        color_continuous_scale=px.colors.sequential.Plasma)
 
-    data = [dict(type='choropleth',colorscale='Rainbow', locations = newdf['code'],z=newdf['count'],text=newdf['country'])]
+    # fig.update_layout(title=dict(font=dict(size=28),x=0.5,xanchor='center'),
+    #                   margin=dict(l=60, r=60, t=50, b=50))
 
-    layout = go.Layout(dict(title = "Movies available on Netflix Produced in Each Country-", geo = dict(showframe = True, showcoastlines=True, projection = dict(type='orthographic'))))
+    return fig
 
-    fig = go.Figure(data=data,layout=layout)
-    pyo.plot(fig,filename='barchart.html')
 
-makechoropleth()
+def showGenre(country):
+    df = pd.read_csv('netflix_titles.csv')
 
+    NonUSDF = df[df['country'] != country].index
+
+    df.drop(NonUSDF, inplace=True)
+
+    df['listed_in'] = df['listed_in'].str.split(', ')
+    df = df.explode('listed_in').reset_index(drop=True)
+    cols = list(df.columns)
+    cols.append(cols.pop(cols.index('title')))
+    df = df[cols]
+    newdf = pd.value_counts(df['listed_in'], sort=True)[0:10]
+
+    newdf = pd.DataFrame({'genre': newdf.index, 'count': newdf.values})
+
+    newdf = newdf.sample(frac=1)
+
+    return newdf
+
+
+dfCountries = list(make_choropleth()['country'])
 
 oldMoviesTable = old_movies()
 
@@ -74,10 +129,10 @@ layout_index = html.Div([
     html.A(html.Button('Search For Old Films', className='three columns'),
            href='/old-films'),
     html.Br(), html.Br(),
-    html.A(html.Button('Most Popular Genre In Each Country', className='three columns'),
+    html.A(html.Button('Movies available on Netflix Produced in Each Country', className='three columns'),
            href='/popular-genres'),
     html.Br(), html.Br(),
-    html.A(html.Button('Most Popular Ratings In Each Country', className='three columns'),
+    html.A(html.Button('Most Popular Genres In Each Country', className='three columns'),
            href='/popular-ratings')
 ])
 
@@ -94,11 +149,23 @@ layout_page_1 = html.Div([
 ])
 
 layout_page_2 = html.Div([
-    html.H2('Most Popular Genres In Each Country')
+    html.H2('Movies available on Netflix Produced in Each Country'),
+    html.Div([
+        dcc.Graph(id='the_graph', figure=make_figure())
+    ])
 ])
 
 layout_page_3 = html.Div([
-    html.H2('Most Popular Ratings In Each Country')
+    html.H2('Most Popular Genres In Each Country'),
+    html.P("Names:"),
+    dcc.Dropdown(
+        id='names',
+        value='United States',
+        options=[{'value': x, 'label': x}
+                 for x in dfCountries],
+        clearable=False
+    ),
+    dcc.Graph(id="pie-chart")
 ])
 
 # index layout
@@ -126,6 +193,15 @@ def display_page(pathname):
         return layout_page_3
     else:
         return layout_index
+
+
+@app.callback(
+
+    Output("pie-chart", "figure"),
+    [Input("names", "value")])
+def generate_chart(names):
+    fig = px.pie(showGenre(names), values='count', names='genre')
+    return fig
 
 
 if __name__ == '__main__':
