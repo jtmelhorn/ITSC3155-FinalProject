@@ -6,14 +6,14 @@ import dash_html_components as html
 import dash_table
 from dash.dependencies import Input, Output
 
-#very important -- pip3 install coco
+# very important -- pip3 install coco
 import country_converter as coco
 
 # Load CVS file from Dataset folder
 df_perm = pd.read_csv('netflix_titles.csv')
-#create second DF
+# create second DF
 df = pd.read_csv('netflix_titles.csv')
-#coco allows us to get the country codes since they weren't added in the data set
+# coco allows us to get the country codes since they weren't added in the data set
 cc = coco.CountryConverter()
 df['country'] = df['country'].str.split(', ')
 df = df.explode('country').reset_index(drop=True)
@@ -38,21 +38,21 @@ def old_movies():
 
     df.dropna(inplace=True)
     df.drop_duplicates(keep=False, inplace=True)
-    #convert to string
+    # convert to string
     df = df.astype(str)
     df = df.sort_values('release_year', ascending=True)
 
     return df
 
 
-#creates choropleth map
+# creates choropleth map
 def make_choropleth():
     df = pd.read_csv('netflix_titles.csv')
     cc = coco.CountryConverter()
     tvshowDF = df[df['type'] == 'TV Show'].index
     df.drop(tvshowDF, inplace=True)
 
-    #splits countries where multiple are listed in the same column
+    # splits countries where multiple are listed in the same column
     df['country'] = df['country'].str.split(', ')
     df = df.explode('country').reset_index(drop=True)
     cols = list(df.columns)
@@ -68,9 +68,8 @@ def make_choropleth():
     return newdf
 
 
-#makes figure
+# makes figure
 def make_figure():
-
     mapDf['Movies Produced:'] = mapDf['count']
     fig = px.choropleth(mapDf, locations="code",
                         color="Movies Produced:",
@@ -81,10 +80,10 @@ def make_figure():
     return fig
 
 
-def showGenre(country):
+def showGenre(country, datatype):
     df = pd.read_csv('netflix_titles.csv')
 
-    if(country != 'All'):
+    if (country != 'All'):
         NonUSDF = df[df['country'] != country].index
 
         df.drop(NonUSDF, inplace=True)
@@ -93,13 +92,13 @@ def showGenre(country):
     df = df.explode('listed_in').reset_index(drop=True)
     cols = list(df.columns)
     cols.append(cols.pop(cols.index('title')))
-    #sorts out americanized data
+    # sorts out americanized data
     df = df[cols]
     df = df[df['listed_in'] != 'International TV Shows']
     df = df[df['listed_in'] != 'International Movies']
     df = df[df['listed_in'] != 'British TV Shows']
-    newdf = pd.value_counts(df['listed_in'], sort=True)[0:10]
-    newdf = pd.DataFrame({'genre': newdf.index, 'count': newdf.values})
+    newdf = pd.value_counts(df['listed_in' if datatype == 'genre' else 'rating'], sort=True)[0:10]
+    newdf = pd.DataFrame({datatype: newdf.index, 'count': newdf.values})
 
     newdf = newdf.sample(frac=1)
 
@@ -107,7 +106,7 @@ def showGenre(country):
 
 
 dfCountries = list(make_choropleth()['country'])
-dfCountries.insert(0,'All')
+dfCountries.insert(0, 'All')
 
 oldMoviesTable = old_movies()
 
@@ -120,24 +119,31 @@ url_bar_and_content_div = html.Div([
 ])
 
 layout_index = html.Div([
-    html.H2(children = 'Welcome To NetAvail!',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
-    html.Br(), html.Br(),html.Br(), html.Br(),
-    html.A(html.Button('Search For TV Shows and Movies', className='three columns',style={'margin-left': '1000px','margin-bottom': '10px','color':'black','display':'flex', 'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color':'rgb(169,169,169)'}),
+    html.H2(children='Welcome To NetAvail!',
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
+    html.Br(), html.Br(), html.Br(), html.Br(),
+    html.A(html.Button('Search For TV Shows and Movies', className='three columns',
+                       style={'margin-left': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
+                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
+                              'background-color': 'rgb(169,169,169)'}),
            href='/old-films'),
-    html.Br(), html.Br(),html.Br(), html.Br(),
-    html.A(html.Button('Movies and TV Shows available on Netflix Produced in Each Country', className='three columns',style={'marginLeft': '1000px','margin-bottom': '10px','color':'black','display':'flex', 'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color':'rgb(169,169,169)'}),
+    html.Br(), html.Br(), html.Br(), html.Br(),
+    html.A(html.Button('Movies and TV Shows available on Netflix Produced in Each Country', className='three columns',
+                       style={'marginLeft': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
+                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
+                              'background-color': 'rgb(169,169,169)'}),
            href='/popular-genres'),
-    html.Br(), html.Br(),html.Br(), html.Br(),
-    html.A(html.Button('Most Popular Genres In Each Country', className='three columns',style={'marginLeft': '1000px','margin-bottom': '10px','color':'black','display':'flex', 'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color':'rgb(169,169,169)'}),
+    html.Br(), html.Br(), html.Br(), html.Br(),
+    html.A(html.Button('Most Popular Genres In Each Country', className='three columns',
+                       style={'marginLeft': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
+                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
+                              'background-color': 'rgb(169,169,169)'}),
            href='/popular-ratings')
 ])
 
-
-
-
-
 layout_page_1 = html.Div([
-    html.H2('Search for TV Shows and Movies',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
+    html.H2('Search for TV Shows and Movies',
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
     dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in oldMoviesTable.columns],
                          data=oldMoviesTable.to_dict('records'), style_table={'overflowX': 'auto'},
                          filter_action='native',
@@ -149,20 +155,29 @@ layout_page_1 = html.Div([
 ])
 
 layout_page_2 = html.Div([
-    html.H2('TV Shows and Movies available on Netflix Produced in Each Country',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
+    html.H2('TV Shows and Movies available on Netflix Produced in Each Country',
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
     html.Div([
         dcc.Graph(id='the_graph', figure=make_figure())
     ])
 ])
 
 layout_page_3 = html.Div([
-    html.H2('Most Popular Genres In Each Country',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
+    html.H2('Most Popular Genres In Each Country',
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
     html.P("Countries:"),
     dcc.Dropdown(
         id='names',
         value='All',
         options=[{'value': x, 'label': x}
                  for x in dfCountries],
+        clearable=False
+    ),
+    dcc.Dropdown(
+        id='datatype',
+        value='genre',
+        options=[{'value': x, 'label': x}
+                 for x in ['genre', 'ratings']],
         clearable=False
     ),
     dcc.Graph(id="pie-chart")
@@ -196,11 +211,14 @@ def display_page(pathname):
 
 
 @app.callback(
-
     Output("pie-chart", "figure"),
-    [Input("names", "value")])
-def generate_chart(names):
-    fig = px.pie(showGenre(names), values='count', names='genre')
+    [Input("names", "value")],
+    [Input("datatype", "value")]
+)
+def generate_chart(names, datatype):
+    print(datatype)
+    fig = px.pie(showGenre(names, datatype), values='count', names=datatype)
+    print(showGenre(names, datatype).columns)
     return fig
 
 
