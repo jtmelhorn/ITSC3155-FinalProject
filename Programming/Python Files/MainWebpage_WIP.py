@@ -51,29 +51,6 @@ def old_movies():
     return df
 
 
-# creates choropleth map
-def make_choropleth():
-    df = pd.read_csv('netflix_titles.csv')
-    cc = coco.CountryConverter()
-    tvshowDF = df[df['type'] == 'TV Show'].index
-    df.drop(tvshowDF, inplace=True)
-
-    # splits countries where multiple are listed in the same column
-    df['country'] = df['country'].str.split(', ')
-    df = df.explode('country').reset_index(drop=True)
-    cols = list(df.columns)
-    cols.append(cols.pop(cols.index('title')))
-    df = df[cols]
-
-    newdf = pd.value_counts(df['country'], sort=True)
-
-    newdf = pd.DataFrame({'country': newdf.index, 'count': newdf.values})
-
-    newdf.drop_duplicates(subset=['count'], keep='last', inplace=True)
-    newdf['Movies Produced:'] = newdf['count']
-    return newdf
-
-
 # makes figure
 def make_figure():
     mapDf = map_show()
@@ -87,23 +64,21 @@ def make_figure():
     return fig
 
 
-def listed_in_unique():
+def showUniqueGenre():
     df = pd.read_csv('netflix_titles.csv')
-
-    if (country != 'All'):
-        NonUSDF = df[df['country'] != country].index
-
-        df.drop(NonUSDF, inplace=True)
 
     df['listed_in'] = df['listed_in'].str.split(', ')
     df = df.explode('listed_in').reset_index(drop=True)
     cols = list(df.columns)
     cols.append(cols.pop(cols.index('title')))
     # sorts out americanized data
-    df = df[cols]['listed_in']
-    df = set(list(df))
-    return df
+    df = df[cols]
+    df = df[df['listed_in'] != 'International TV Shows']
+    df = df[df['listed_in'] != 'International Movies']
+    df = df[df['listed_in'] != 'British TV Shows']
+    df = df.drop_duplicates(subset='listed_in', keep='first')
 
+    return df
 
 def showGenre(country, datatype):
     df = pd.read_csv('netflix_titles.csv')
@@ -130,7 +105,7 @@ def showGenre(country, datatype):
     return newdf
 
 
-dfCountries = list(make_choropleth()['country'])
+dfCountries = list(map_show()['country'])
 dfCountries.insert(0, 'All')
 
 oldMoviesTable = old_movies()
@@ -193,7 +168,7 @@ layout_page_2 = html.Div([
             id='input_state',
             value='genre',
             options=[{'value': x, 'label': x}
-                     for x in listed_in_unique()],
+                     for x in showUniqueGenre()['listed_in']],
             clearable=False
         ),
         # Ratings
