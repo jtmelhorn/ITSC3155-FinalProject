@@ -72,7 +72,7 @@ def make_choropleth():
     newdf = pd.DataFrame({'country': newdf.index, 'count': newdf.values})
 
     newdf.drop_duplicates(subset=['count'], keep='last', inplace=True)
-
+    newdf['Movies Produced:'] = newdf['count']
     return newdf
 
 
@@ -80,11 +80,12 @@ def make_figure():
     # if val_selected is None:
     #     raise PreventUpdate
     # else:
+
+    mapDf['Movies Produced:'] = mapDf['count']
     fig = px.choropleth(mapDf, locations="code",
-                        color="count",
+                        color="Movies Produced:",
                         hover_name="country",
                         projection='orthographic',
-                        title='Movies Produced',
                         color_continuous_scale=px.colors.sequential.Plasma)
 
     # fig.update_layout(title=dict(font=dict(size=28),x=0.5,xanchor='center'),
@@ -96,17 +97,20 @@ def make_figure():
 def showGenre(country):
     df = pd.read_csv('netflix_titles.csv')
 
-    NonUSDF = df[df['country'] != country].index
+    if(country != 'All'):
+        NonUSDF = df[df['country'] != country].index
 
-    df.drop(NonUSDF, inplace=True)
+        df.drop(NonUSDF, inplace=True)
 
     df['listed_in'] = df['listed_in'].str.split(', ')
     df = df.explode('listed_in').reset_index(drop=True)
     cols = list(df.columns)
     cols.append(cols.pop(cols.index('title')))
     df = df[cols]
+    df = df[df['listed_in'] != 'International TV Shows']
+    df = df[df['listed_in'] != 'International Movies']
+    df = df[df['listed_in'] != 'British TV Shows']
     newdf = pd.value_counts(df['listed_in'], sort=True)[0:10]
-
     newdf = pd.DataFrame({'genre': newdf.index, 'count': newdf.values})
 
     newdf = newdf.sample(frac=1)
@@ -115,6 +119,7 @@ def showGenre(country):
 
 
 dfCountries = list(make_choropleth()['country'])
+dfCountries.insert(0,'All')
 
 oldMoviesTable = old_movies()
 
@@ -127,21 +132,24 @@ url_bar_and_content_div = html.Div([
 ])
 
 layout_index = html.Div([
-    html.H2(children = 'Welcome To NetAvail!',style={'textAlign':'center'}),
-    html.A(html.Button('Search For Old Films', className='three columns'),
+    html.H2(children = 'Welcome To NetAvail!',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
+    html.Br(), html.Br(),html.Br(), html.Br(),
+    html.A(html.Button('Search For Old Films', className='three columns',style={'margin-left': '1000px','margin-bottom': '10px','color':'black','display':'flex', 'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color':'rgb(169,169,169)'}),
            href='/old-films'),
-    html.Br(), html.Br(),
-    html.A(html.Button('Movies available on Netflix Produced in Each Country', className='three columns'),
+    html.Br(), html.Br(),html.Br(), html.Br(),
+    html.A(html.Button('Movies available on Netflix Produced in Each Country', className='three columns',style={'marginLeft': '1000px','margin-bottom': '10px','color':'black','display':'flex', 'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color':'rgb(169,169,169)'}),
            href='/popular-genres'),
-    html.Br(), html.Br(),
-    html.A(html.Button('Most Popular Genres In Each Country', className='three columns'),
+    html.Br(), html.Br(),html.Br(), html.Br(),
+    html.A(html.Button('Most Popular Genres In Each Country', className='three columns',style={'marginLeft': '1000px','margin-bottom': '10px','color':'black','display':'flex', 'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color':'rgb(169,169,169)'}),
            href='/popular-ratings')
 ])
 
 
 
+
+
 layout_page_1 = html.Div([
-    html.H2('Old Films'),
+    html.H2('Old Films',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
     dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in oldMoviesTable.columns],
                          data=oldMoviesTable.to_dict('records'), style_table={'overflowX': 'auto'},
                          filter_action='native',
@@ -153,18 +161,18 @@ layout_page_1 = html.Div([
 ])
 
 layout_page_2 = html.Div([
-    html.H2('Movies available on Netflix Produced in Each Country'),
+    html.H2('Movies available on Netflix Produced in Each Country',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
     html.Div([
         dcc.Graph(id='the_graph', figure=make_figure())
     ])
 ])
 
 layout_page_3 = html.Div([
-    html.H2('Most Popular Genres In Each Country'),
-    html.P("Names:"),
+    html.H2('Most Popular Genres In Each Country',style={'textAlign':'center','background-color' : 'rgb(0,0,0)','margin-top':'0px','color':'red'}),
+    html.P("Countries:"),
     dcc.Dropdown(
         id='names',
-        value='United States',
+        value='All',
         options=[{'value': x, 'label': x}
                  for x in dfCountries],
         clearable=False
