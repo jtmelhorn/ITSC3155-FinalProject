@@ -58,9 +58,11 @@ def map_show(genre = 'Any', rating = 'Any'):
         df = df[df['listed_in'] != 'International Movies']
         df = df[df['listed_in'] != 'British TV Shows']
         #df = df.drop_duplicates(subset='listed_in', keep='first')
-        df = df[df['listed_in'] == genre]
+        genredf = df[df['listed_in'] != genre].index
+        df.drop(genredf, inplace=True)
     if rating != 'Any':
-        df = df[df['rating'] == rating]
+        ratingdf = df[df['rating'] != rating].index
+        df.drop(ratingdf, inplace=True)
 
     mapDf = pd.value_counts(df['country'], sort=True)
 
@@ -123,17 +125,23 @@ def showUniqueGenre():
 def showGenre(country, datatype):
     df = pd.read_csv('netflix_titles.csv')
 
+    df['country'] = df['country'].str.split(', ')
+    df = df.explode('country').reset_index(drop=True)
+    cols = list(df.columns)
+    cols.append(cols.pop(cols.index('title')))
+    df = df[cols]
+
     if (country != 'All'):
         NonUSDF = df[df['country'] != country].index
 
         df.drop(NonUSDF, inplace=True)
-
-    df['listed_in'] = df['listed_in'].str.split(', ')
-    df = df.explode('listed_in').reset_index(drop=True)
-    cols = list(df.columns)
-    cols.append(cols.pop(cols.index('title')))
-    # sorts out americanized data
-    df = df[cols]
+    if(datatype == 'genre'):
+        df['listed_in'] = df['listed_in'].str.split(', ')
+        df = df.explode('listed_in').reset_index(drop=True)
+        cols = list(df.columns)
+        cols.append(cols.pop(cols.index('title')))
+        # sorts out americanized data
+        df = df[cols]
     df = df[df['listed_in'] != 'International TV Shows']
     df = df[df['listed_in'] != 'International Movies']
     df = df[df['listed_in'] != 'British TV Shows']
@@ -208,7 +216,7 @@ layout_page_2 = html.Div([
             id='input_state',
             value='Any',
             options=[{'value': x, 'label': x}
-                     for x in ['Any']+list(showUniqueGenre()['listed_in'])],
+                     for x in ['Any']+['Dramas']+list(showUniqueGenre()['listed_in'])],
             clearable=False
         ),
         # Ratings
