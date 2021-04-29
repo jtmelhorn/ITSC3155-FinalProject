@@ -76,7 +76,7 @@ def map_show(genre = 'Any', rating = 'Any'):
 def old_movies():
     df = pd.read_csv('netflix_titles.csv')
     del df['show_id'], df['type'], df['director'], df['date_added'], df['rating'], \
-        df['duration'], df['country']
+        df['duration']
     pd.set_option('display.max_colwidth', 5)
 
     df.dropna(inplace=True)
