@@ -98,9 +98,9 @@ def make_figure(genre = 'Any', rating = 'Any'):
     fig = px.choropleth(mapDf, locations="code",
                         color="Movies Produced:",
                         hover_name="country",
-                        projection='orthographic',
+                        projection='natural earth',
                         color_continuous_scale=px.colors.sequential.Plasma)
-
+    fig.update_layout(height=1000)
     return fig
 
 
@@ -117,7 +117,23 @@ def showUniqueGenre():
     df = df[df['listed_in'] != 'International Movies']
     df = df[df['listed_in'] != 'British TV Shows']
     df = df.drop_duplicates(subset='listed_in', keep='first')
-    df = df.drop_duplicates(subset='rating', keep='first')
+
+    return df
+
+def showUniqueRating():
+    df = pd.read_csv('netflix_titles.csv')
+
+    df['listed_in'] = df['listed_in'].str.split(', ')
+    df = df.explode('listed_in').reset_index(drop=True)
+    cols = list(df.columns)
+    cols.append(cols.pop(cols.index('title')))
+    # sorts out americanized data
+    df = df[cols]
+    df = df[df['listed_in'] != 'International TV Shows']
+    df = df[df['listed_in'] != 'International Movies']
+    df = df[df['listed_in'] != 'British TV Shows']
+    df = df.drop_duplicates(subset='listed_in', keep='first')
+    df = df.drop_duplicates(subset='rating',keep='first')
 
     return df
 
@@ -216,7 +232,7 @@ layout_page_2 = html.Div([
             id='input_state',
             value='Any',
             options=[{'value': x, 'label': x}
-                     for x in ['Any']+['Dramas']+list(showUniqueGenre()['listed_in'])],
+                     for x in ['Any'] + list(showUniqueGenre()['listed_in'])],
             clearable=False
         ),
         # Ratings
@@ -225,7 +241,7 @@ layout_page_2 = html.Div([
             id='input_state_2',
             value='Any',
             options=[{'value': x, 'label': x}
-                     for x in ['Any']+list(showUniqueGenre()['rating'])],
+                     for x in ['Any']+list(showUniqueRating()['rating'])],
             clearable=False
         )
     ], style={'text-align': 'center'})
@@ -300,6 +316,7 @@ def update_output(input_state, input_state_2):
         raise PreventUpdate
     else:
         fig = make_figure(input_state, input_state_2)
+        fig.update_layout(height=1000)
         fig.update_layout()
         return fig
 
