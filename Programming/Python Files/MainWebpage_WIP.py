@@ -20,6 +20,7 @@ def map_show():
     # coco allows us to get the country codes since they weren't added in the data set
     cc = coco.CountryConverter()
     df['country'] = df['country'].str.split(', ')
+    df['country'] = df[df['country'] != 'West Germany']
     df = df.explode('country').reset_index(drop=True)
     cols = list(df.columns)
     cols.append(cols.pop(cols.index('title')))
