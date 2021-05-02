@@ -11,169 +11,210 @@ from dash.exceptions import PreventUpdate
 # very important -- pip3 install coco
 import country_converter as coco
 
-# Load CVS file from Dataset folder
-df_perm = pd.read_csv('netflix_titles.csv')
-
 
 def map_get():
-    df = pd.read_csv('netflix_titles.csv')
-    # coco allows us to get the country codes since they weren't added in the data set
-    cc = coco.CountryConverter()
-    df['country'] = df['country'].str.split(', ')
-    df = df.explode('country').reset_index(drop=True)
-    cols = list(df.columns)
+    """Return a list of the different countries in the dataset."""
+
+    # make a copy of the csv file
+    map_df = pd.read_csv('netflix_titles.csv')
+    map_df['country'] = map_df['country'].str.split(', ')
+    map_df = map_df.explode('country').reset_index(drop=True)
+
+    cols = list(map_df.columns)
     cols.append(cols.pop(cols.index('title')))
-    df = df[cols]
+    map_df = map_df[cols]
 
-    mapDf = pd.value_counts(df['country'], sort=True)
+    map_df = pd.value_counts(map_df['country'], sort=True)
 
-    mapDf = pd.DataFrame({'country': mapDf.index, 'count': mapDf.values})
+    map_df = pd.DataFrame({'country': map_df.index, 'count': map_df.values})
 
-    mapDf.drop_duplicates(subset=['count'], keep='last', inplace=True)
+    map_df.drop_duplicates(subset=['count'], keep='last', inplace=True)
 
-    mapDf['code'] = coco.convert(names=mapDf.country, to='ISO3')
-
-    return mapDf
-
-
-def map_show(genre = 'Any', rating = 'Any'):
-    #print(genre,rating)
-    df = pd.read_csv('netflix_titles.csv')
     # coco allows us to get the country codes since they weren't added in the data set
-    cc = coco.CountryConverter()
-    df['country'] = df['country'].str.split(', ')
-    df = df.explode('country').reset_index(drop=True)
-    cols = list(df.columns)
+    map_df['code'] = coco.convert(names=map_df.country, to='ISO3')
+
+    return map_df
+
+
+def map_show(genre='Any', rating='Any'):
+    """Return a panda dataframe that shows a filtered list of countries and their amount of movies
+    produced based on the genre and rating of those movies.
+
+    :param genre: A string, the genre of the movie.
+    :param rating: A string, the rating of the movie."""
+
+    map_df = pd.read_csv('netflix_titles.csv')
+    map_df['country'] = map_df['country'].str.split(', ')
+    map_df = map_df.explode('country').reset_index(drop=True)
+    cols = list(map_df.columns)
     cols.append(cols.pop(cols.index('title')))
-    df = df[cols]
+    map_df = map_df[cols]
 
     if genre != 'Any':
-        df['listed_in'] = df['listed_in'].str.split(', ')
-        df = df.explode('listed_in').reset_index(drop=True)
-        cols = list(df.columns)
+        map_df['listed_in'] = map_df['listed_in'].str.split(', ')
+        map_df = map_df.explode('listed_in').reset_index(drop=True)
+        cols = list(map_df.columns)
         cols.append(cols.pop(cols.index('title')))
-        # sorts out americanized data
-        df = df[cols]
-        df = df[df['listed_in'] != 'International TV Shows']
-        df = df[df['listed_in'] != 'International Movies']
-        df = df[df['listed_in'] != 'British TV Shows']
-        #df = df.drop_duplicates(subset='listed_in', keep='first')
-        genredf = df[df['listed_in'] != genre].index
-        df.drop(genredf, inplace=True)
+
+        # Sorts out Americanized data
+        map_df = map_df[cols]
+        map_df = map_df[map_df['listed_in'] != 'International TV Shows']
+        map_df = map_df[map_df['listed_in'] != 'International Movies']
+        map_df = map_df[map_df['listed_in'] != 'British TV Shows']
+
+        # Filters the genres that aren't relevant out
+        genre_df = map_df[map_df['listed_in'] != genre].index
+        map_df.drop(genre_df, inplace=True)
+
     if rating != 'Any':
-        ratingdf = df[df['rating'] != rating].index
-        df.drop(ratingdf, inplace=True)
+        # Filters the ratings that aren't relevant out
+        rating_df = map_df[map_df['rating'] != rating].index
+        map_df.drop(rating_df, inplace=True)
 
-    mapDf = pd.value_counts(df['country'], sort=True)
+    map_df = pd.value_counts(map_df['country'], sort=True)
 
-    mapDf = pd.DataFrame({'country': mapDf.index, 'count': mapDf.values})
+    map_df = pd.DataFrame({'country': map_df.index, 'count': map_df.values})
 
-    mapDf.drop_duplicates(subset=['count'], keep='last', inplace=True)
+    map_df.drop_duplicates(subset=['count'], keep='last', inplace=True)
 
-    mapDf['code'] = coco.convert(names=mapDf.country, to='ISO3')
+    # coco allows us to get the country codes since they weren't added in the data set
+    map_df['code'] = coco.convert(names=map_df.country, to='ISO3')
 
-    return mapDf
+    return map_df
 
 
-def old_movies():
-    df = pd.read_csv('netflix_titles.csv')
-    del df['show_id'], df['type'], df['director'], df['date_added'], df['rating'], \
-        df['duration']
+def films_produced():
+    """Return a list of every movie on Netflix and their respective elements with the exception of what
+    seems less important."""
+
+    # Copy of csv file
+    films = pd.read_csv('netflix_titles.csv')
+
+    # Delete information the user likely wouldn't care as much about
+    del films['show_id'], films['type'], films['director'], films['date_added'], films['rating'], \
+        films['duration']
     pd.set_option('display.max_colwidth', 5)
 
-    df.dropna(inplace=True)
-    df.drop_duplicates(keep=False, inplace=True)
+    # Drop NaN values and duplicates
+    films.dropna(inplace=True)
+    films.drop_duplicates(keep=False, inplace=True)
+
     # convert to string
-    df = df.astype(str)
-    df = df.sort_values('release_year', ascending=True)
+    films = films.astype(str)
+    films = films.sort_values('release_year', ascending=True)
 
-    return df
+    return films
 
 
-# makes figure
-def make_figure(genre = 'Any', rating = 'Any'):
-    mapDf = map_show(genre, rating)
-    mapDf['Movies Produced:'] = mapDf['count']
-    #print(mapDf)
-    fig = px.choropleth(mapDf, locations="code",
+def make_figure(genre='Any', rating='Any'):
+    """Return the choropleth representation of the filtered map data from the map_show method
+
+    :param genre: A string, the genre of the movie.
+    :param rating: A string, the rating of the movie."""
+
+    map_df = map_show(genre, rating)
+    map_df['Movies Produced:'] = map_df['count']
+
+    fig = px.choropleth(map_df, locations="code",
                         color="Movies Produced:",
                         hover_name="country",
                         projection='natural earth',
                         color_continuous_scale=px.colors.sequential.Plasma)
     fig.update_layout(height=1000)
+
     return fig
 
 
 def showUniqueGenre():
-    df = pd.read_csv('netflix_titles.csv')
+    """Return a list of unique genres available on Netflix."""
 
-    df['listed_in'] = df['listed_in'].str.split(', ')
-    df = df.explode('listed_in').reset_index(drop=True)
-    cols = list(df.columns)
+    unique = pd.read_csv('netflix_titles.csv')
+    unique['listed_in'] = unique['listed_in'].str.split(', ')
+    unique = unique.explode('listed_in').reset_index(drop=True)
+    cols = list(unique.columns)
     cols.append(cols.pop(cols.index('title')))
-    # sorts out americanized data
-    df = df[cols]
-    df = df[df['listed_in'] != 'International TV Shows']
-    df = df[df['listed_in'] != 'International Movies']
-    df = df[df['listed_in'] != 'British TV Shows']
-    df = df.drop_duplicates(subset='listed_in', keep='first')
 
-    return df
+    # Sorts out Americanized data
+    unique = unique[cols]
+    unique = unique[unique['listed_in'] != 'International TV Shows']
+    unique = unique[unique['listed_in'] != 'International Movies']
+    unique = unique[unique['listed_in'] != 'British TV Shows']
+
+    unique = unique.drop_duplicates(subset='listed_in', keep='first')
+
+    return unique
+
 
 def showUniqueRating():
-    df = pd.read_csv('netflix_titles.csv')
+    """Return a list of unique ratings available on Netflix."""
 
-    df['listed_in'] = df['listed_in'].str.split(', ')
-    df = df.explode('listed_in').reset_index(drop=True)
-    cols = list(df.columns)
+    unique_df = pd.read_csv('netflix_titles.csv')
+    unique_df['listed_in'] = unique_df['listed_in'].str.split(', ')
+    unique_df = unique_df.explode('listed_in').reset_index(drop=True)
+
+    cols = list(unique_df.columns)
     cols.append(cols.pop(cols.index('title')))
-    # sorts out americanized data
-    df = df[cols]
-    df = df[df['listed_in'] != 'International TV Shows']
-    df = df[df['listed_in'] != 'International Movies']
-    df = df[df['listed_in'] != 'British TV Shows']
-    df = df.drop_duplicates(subset='listed_in', keep='first')
-    df = df.drop_duplicates(subset='rating',keep='first')
+    unique_df = unique_df[cols]
 
-    return df
+    # Sorts out Americanized data
+    unique_df = unique_df[unique_df['listed_in'] != 'International TV Shows']
+    unique_df = unique_df[unique_df['listed_in'] != 'International Movies']
+    unique_df = unique_df[unique_df['listed_in'] != 'British TV Shows']
+
+    unique_df = unique_df.drop_duplicates(subset='listed_in', keep='first')
+    unique_df = unique_df.drop_duplicates(subset='rating', keep='first')
+
+    return unique_df
 
 
-def showGenre(country, datatype):
+def showGenre(country:str, data_type:str):
+    """Shifts between genre and rating for the pie chart depending on the data type; it will then return
+    a dataframe of the country chosen's best categories.
+
+    :param country: A string, the country to show in the chart.
+    :param data_type: A string, rating or genre best categories."""
+
+    # Copy data from CSV file
     df = pd.read_csv('netflix_titles.csv')
-
     df['country'] = df['country'].str.split(', ')
     df = df.explode('country').reset_index(drop=True)
     cols = list(df.columns)
     cols.append(cols.pop(cols.index('title')))
     df = df[cols]
 
-    if (country != 'All'):
-        NonUSDF = df[df['country'] != country].index
+    # Drop all countries but the one chosen
+    if country != 'All':
+        non_cndf = df[df['country'] != country].index
+        df.drop(non_cndf, inplace=True)
 
-        df.drop(NonUSDF, inplace=True)
-    if(datatype == 'genre'):
+    # More manipulation must be done to list best genre categories
+    if data_type == 'genre':
         df['listed_in'] = df['listed_in'].str.split(', ')
         df = df.explode('listed_in').reset_index(drop=True)
         cols = list(df.columns)
         cols.append(cols.pop(cols.index('title')))
-        # sorts out americanized data
         df = df[cols]
+
+    # Sorts out Americanized data
     df = df[df['listed_in'] != 'International TV Shows']
     df = df[df['listed_in'] != 'International Movies']
     df = df[df['listed_in'] != 'British TV Shows']
-    newdf = pd.value_counts(df['listed_in' if datatype == 'genre' else 'rating'], sort=True)[0:10]
-    newdf = pd.DataFrame({datatype: newdf.index, 'count': newdf.values})
 
-    newdf = newdf.sample(frac=1)
+    # Gets the counts of the top 10 best categories based on data_type
+    new_df = pd.value_counts(df['listed_in' if data_type == 'genre' else 'rating'], sort=True)[0:10]
+    new_df = pd.DataFrame({data_type: new_df.index, 'count': new_df.values})
 
-    return newdf
+    new_df = new_df.sample(frac=1)
+
+    return new_df
 
 
+# Small necessary elements that need only run once
 dfCountries = list(map_get()['country'])
 dfCountries.insert(0, 'All')
+films_table = films_produced()
 
-oldMoviesTable = old_movies()
-
+# Dash startup
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -182,6 +223,7 @@ url_bar_and_content_div = html.Div([
     html.Div(id='page-content')
 ])
 
+# Title Page
 layout_index = html.Div([
     html.H2(children='Welcome To NetAvail!',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
@@ -190,7 +232,7 @@ layout_index = html.Div([
                        style={'margin-left': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
                               'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
                               'background-color': 'rgb(169,169,169)'}),
-           href='/old-films'),
+           href='/films-produced'),
     html.Br(), html.Br(), html.Br(), html.Br(),
     html.A(html.Button('Search Where the Movies Were Produced', className='three columns',
                        style={'marginLeft': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
@@ -205,11 +247,12 @@ layout_index = html.Div([
            href='/popular-categories')
 ])
 
+# Search for TV Shows and Movies Page
 layout_page_1 = html.Div([
     html.H2('Search for TV Shows and Movies',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
-    dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in oldMoviesTable.columns],
-                         data=oldMoviesTable.to_dict('records'), style_table={'overflowX': 'auto'},
+    dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in films_table.columns],
+                         data=films_table.to_dict('records'), style_table={'overflowX': 'auto'},
                          filter_action='native',
                          style_cell={
                              'height': 'auto',
@@ -218,6 +261,7 @@ layout_page_1 = html.Div([
                              'whiteSpace': 'normal'})
 ])
 
+# Search Where the Movies Were Produced Page
 layout_page_2 = html.Div([
     html.H2('TV Shows and Movies available on Netflix Produced in Each Country',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
@@ -241,15 +285,16 @@ layout_page_2 = html.Div([
             id='input_state_2',
             value='Any',
             options=[{'value': x, 'label': x}
-                     for x in ['Any']+list(showUniqueRating()['rating'])],
+                     for x in ['Any'] + list(showUniqueRating()['rating'])],
             clearable=False
         )
     ], style={'text-align': 'center'})
 
 ])
 
+# Most Popular Categories in Each Country
 layout_page_3 = html.Div([
-    html.H2('Most Popular Genres In Each Country',
+    html.H2('Most Popular Categories In Each Country',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
     html.P("Countries:"),
     dcc.Dropdown(
@@ -260,7 +305,7 @@ layout_page_3 = html.Div([
         clearable=False
     ),
     dcc.Dropdown(
-        id='datatype',
+        id='data_type',
         value='genre',
         options=[{'value': x, 'label': x}
                  for x in ['genre', 'ratings']],
@@ -286,7 +331,11 @@ app.validation_layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    if pathname == "/old-films":
+    """Return the proper page to be on.
+
+    :param pathname: A dash Input pathname, gives proper path to the page."""
+
+    if pathname == "/films-produced":
         return layout_page_1
     elif pathname == "/movies-produced":
         return layout_page_2
@@ -296,22 +345,35 @@ def display_page(pathname):
         return layout_index
 
 
+# Callback for the pie chart
 @app.callback(
     Output("pie-chart", "figure"),
     [Input("names", "value")],
-    [Input("datatype", "value")]
+    [Input("data_type", "value")]
 )
-def generate_chart(names, datatype):
-    fig = px.pie(showGenre(names, datatype), values='count', names=datatype)
+def generate_chart(names, data_type):
+    """Return a figure to the dash callback showing a pie chart of a country's most popular categories.
+
+    :param names: A dash input value, the country name.
+    :param data_type: A dash input value, the rating or genre chosen."""
+
+    fig = px.pie(showGenre(names, data_type), values='count', names=data_type)
     return fig
 
 
+# Callback for the map
 @app.callback(
     Output(component_id='the_graph', component_property='figure'),
     [Input("input_state", "value")],
     [Input("input_state_2", "value")]
 )
 def update_output(input_state, input_state_2):
+    """Return a figure to the dash callback showing a map of data regarding movies produced on Netflix
+    based on genre and rating.
+
+    :param input_state: A dash input value, the genre.
+    :param input_state_2: A dash input value, the rating."""
+
     if input_state is None and input_state_2 is None:
         raise PreventUpdate
     else:
