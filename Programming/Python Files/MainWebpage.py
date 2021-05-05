@@ -7,10 +7,13 @@ import dash_html_components as html
 import dash_table
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+import base64
 
 # very important -- pip3 install coco
 import country_converter as coco
 
+image_filename = 'justins_creation.png'
+encoded_image = base64.b64encode(open(image_filename, 'rb').read())
 
 def map_get():
     """Return a list of the different countries in the dataset."""
@@ -119,8 +122,8 @@ def make_figure(genre='Any', rating='Any'):
                         color="Movies Produced:",
                         hover_name="country",
                         projection='natural earth',
-                        color_continuous_scale=px.colors.sequential.Plasma)
-    fig.update_layout(height=1000)
+                        color_continuous_scale='Oranges')
+    fig.update_layout(height=900)
 
     return fig
 
@@ -225,34 +228,44 @@ url_bar_and_content_div = html.Div([
 
 # Title Page
 layout_index = html.Div([
-    html.H2(children='Welcome To NetAvail!',
-            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
-    html.Br(), html.Br(), html.Br(), html.Br(),
-    html.A(html.Button('Search For TV Shows and Movies', className='three columns',
-                       style={'margin-left': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
+    html.H2(children='NetAvail',
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'white'}),
+    html.Br(), html.Br(),
+    html.H3(children='NetAvail was created in order to produce easy to read and visualize data for niche content creators by showing them creation trends in the country of their choice.',
+            style={'textAlign': 'center', 'margin-top': '0px', 'color': 'gray'}),
+
+    html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),style={'display':'inline-block','float':'left'}),
+    html.Br(), html.Br(), html.Br(), html.Br(),   html.Br(), html.Br(), html.Br(), html.Br(), html.Br(),
+    html.A(html.Button('View the most frequent Genre or Rating in each country in a map view! ', className='three columns',
+                       style={'margin-bottom': '10px', 'color': 'black', 'display': 'inline-block',
                               'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
-                              'background-color': 'rgb(169,169,169)'}),
-           href='/films-produced'),
-    html.Br(), html.Br(), html.Br(), html.Br(),
-    html.A(html.Button('Search Where the Movies Were Produced', className='three columns',
-                       style={'marginLeft': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
-                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
-                              'background-color': 'rgb(169,169,169)'}),
+                              'background-color': 'rgb(169,169,169)','margin-left':'200px','width':'25%'}),
            href='/movies-produced'),
     html.Br(), html.Br(), html.Br(), html.Br(),
-    html.A(html.Button('Most Popular Categories In Each Country', className='three columns',
-                       style={'marginLeft': '1000px', 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
+    html.A(html.Button('View the most popular Genre or Rating in each country!', className='three columns',
+                       style={'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
+                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color': 'rgb(169,169,169)',
+                              'margin-left':'200px','width':'25%','height':'auto'})
+,           href='/popular-categories'),
+    html.Br(), html.Br(), html.Br(), html.Br(),
+    html.A(html.Button('Search For TV Shows and Movies', className='three columns',
+                       style={ 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
                               'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
-                              'background-color': 'rgb(169,169,169)'}),
-           href='/popular-categories')
+                              'background-color': 'rgb(169,169,169)','margin-left':'200px','width':'25%'}),
+           href='/films-produced')
 ])
 
 # Search for TV Shows and Movies Page
 layout_page_1 = html.Div([
     html.H2('Search for TV Shows and Movies',
-            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
+    html.H3('Using this feature you can sort TV Shows and Movies by Title, Cast, Country, Release Year, Genre and by key words in their decription.'
+            '  To do this simply type in what you are looking for in the box that says filter data under each header!', style={'textAlign':'center','border':'2px solid black', 'background-color':'Gainsboro'}),
+    html.Br(),
     dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in films_table.columns],
-                         data=films_table.to_dict('records'), style_table={'overflowX': 'auto'},
+                         data=films_table.to_dict('records'),
+                         style_table={'overflowX': 'auto'},
+                         page_size=20,
                          filter_action='native',
                          style_cell={
                              'height': 'auto',
@@ -264,7 +277,12 @@ layout_page_1 = html.Div([
 # Search Where the Movies Were Produced Page
 layout_page_2 = html.Div([
     html.H2('TV Shows and Movies available on Netflix Produced in Each Country',
-            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
+    html.H3(
+        'This map shows you the amount of movies produced in each country sorted by either Genre or Ratings. '
+        'To do this simply type in or search for the genre/rating you are looking for in the dropdown and select that option!',
+        style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
+    html.Br(),
     html.Div([
         dcc.Graph(id='the_graph', figure=make_figure())
     ]),
@@ -294,8 +312,13 @@ layout_page_2 = html.Div([
 
 # Most Popular Categories in Each Country
 layout_page_3 = html.Div([
-    html.H2('Most Popular Categories In Each Country',
-            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'red'}),
+    html.H2('Most Popular Genre or Rating In Each Country',
+            style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
+    html.H3(
+        'Using this feature you can sort and find the 10 most popular genre or rating in any available country.'
+        '  To do this simply select your country from the first dropdown and then either select Rating or Genre!',
+        style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
+    html.Br(),
     html.P("Countries:"),
     dcc.Dropdown(
         id='names',
@@ -304,6 +327,7 @@ layout_page_3 = html.Div([
                  for x in dfCountries],
         clearable=False
     ),
+    html.Br(),
     dcc.Dropdown(
         id='data_type',
         value='genre',
@@ -321,9 +345,9 @@ app.layout = url_bar_and_content_div
 app.validation_layout = html.Div([
     url_bar_and_content_div,
     layout_index,
-    layout_page_1,
     layout_page_2,
     layout_page_3,
+    layout_page_1,
 ])
 
 
@@ -378,7 +402,7 @@ def update_output(input_state, input_state_2):
         raise PreventUpdate
     else:
         fig = make_figure(input_state, input_state_2)
-        fig.update_layout(height=1000)
+        fig.update_layout(height=900)
         fig.update_layout()
         return fig
 
