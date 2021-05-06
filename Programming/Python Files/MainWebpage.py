@@ -15,6 +15,7 @@ import country_converter as coco
 image_filename = 'justins_creation.png'
 encoded_image = base64.b64encode(open(image_filename, 'rb').read())
 
+
 def map_get():
     """Return a list of the different countries in the dataset."""
 
@@ -42,7 +43,6 @@ def map_get():
 def map_show(genre='Any', rating='Any'):
     """Return a panda dataframe that shows a filtered list of countries and their amount of movies
     produced based on the genre and rating of those movies.
-
     :param genre: A string, the genre of the movie.
     :param rating: A string, the rating of the movie."""
 
@@ -111,7 +111,6 @@ def films_produced():
 
 def make_figure(genre='Any', rating='Any'):
     """Return the choropleth representation of the filtered map data from the map_show method
-
     :param genre: A string, the genre of the movie.
     :param rating: A string, the rating of the movie."""
 
@@ -170,10 +169,9 @@ def showUniqueRating():
     return unique_df
 
 
-def showGenre(country:str, data_type:str):
+def showGenre(country: str, data_type: str):
     """Shifts between genre and rating for the pie chart depending on the data type; it will then return
     a dataframe of the country chosen's best categories.
-
     :param country: A string, the country to show in the chart.
     :param data_type: A string, rating or genre best categories."""
 
@@ -230,37 +228,50 @@ url_bar_and_content_div = html.Div([
 layout_index = html.Div([
     html.H2(children='NetAvail',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'white'}),
+    html.Br(),
+    html.H3(
+        children='Netflix has no way to see statistics about the content that is available on their platform. Someone who is interested in analyzing or creating popular content can easily fall victim to a lack of information. This may cause their creation to fail because of a Genre or Rating being unpopular in their country and culture. NetAvail allows creators to find a location that fits their niche genre as well as rating. Our app has been designed for these creators to be both intuitive and easy to understand.',
+        style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
     html.Br(), html.Br(),
-    html.H3(children='NetAvail was created in order to produce easy to read and visualize data for niche content creators by showing them creation trends in the country of their choice.',
-            style={'textAlign': 'center', 'margin-top': '0px', 'color': 'gray'}),
+    html.Div([
 
-    html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),style={'display':'inline-block','float':'left'}),
-    html.Br(), html.Br(), html.Br(), html.Br(),   html.Br(), html.Br(), html.Br(), html.Br(), html.Br(),
-    html.A(html.Button('View the most frequent Genre or Rating in each country in a map view! ', className='three columns',
-                       style={'margin-bottom': '10px', 'color': 'black', 'display': 'inline-block',
-                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
-                              'background-color': 'rgb(169,169,169)','margin-left':'200px','width':'25%'}),
-           href='/movies-produced'),
-    html.Br(), html.Br(), html.Br(), html.Br(),
-    html.A(html.Button('View the most popular Genre or Rating in each country!', className='three columns',
-                       style={'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
-                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center','background-color': 'rgb(169,169,169)',
-                              'margin-left':'200px','width':'25%','height':'auto'})
-,           href='/popular-categories'),
-    html.Br(), html.Br(), html.Br(), html.Br(),
-    html.A(html.Button('Search For TV Shows and Movies', className='three columns',
-                       style={ 'margin-bottom': '10px', 'color': 'black', 'display': 'flex',
-                              'flex-direction': 'row', 'justify-content': 'center', 'align-items': 'center',
-                              'background-color': 'rgb(169,169,169)','margin-left':'200px','width':'25%'}),
-           href='/films-produced')
+        html.Div([
+            html.A(html.Button('View Most Popular Movies Produced In Each Country By Genre and Rating! ',
+                               className='three columns',
+                               style={"margin-left": "18px", 'color': 'black',
+                                      'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
+                                      'white-space': 'normal'}),
+                   href='/movies-produced', id='prediction-content')], id="left", className='three columns'),
+
+        html.Div([
+            html.A(html.Button('View the most popular Genre and Rating in each country!', className='three columns',
+                               style={"margin-left": "187px", 'color': 'black', 'justify-content': 'center',
+                                      'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
+                                      'white-space': 'normal'}),
+                   href='/popular-categories', id='prediction-content')], id="center", className='three columns'),
+
+        html.Div([
+            html.A(html.Button('Search For TV Shows and Movies', className='three columns',
+                               style={"margin-left": "365px", 'color': 'black', 'justify-content': 'center',
+                                      'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
+                                      'white-space': 'normal'}),
+                   href='/films-produced', id='prediction-content')], id="right", className='three columns'),
+    ],
+        style={"display": "inline-block"}, className='row'),
+
+    html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
+             style={'display': 'inline-block', 'float': 'left'}),
+    html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br()
 ])
 
 # Search for TV Shows and Movies Page
 layout_page_1 = html.Div([
     html.H2('Search for TV Shows and Movies',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
-    html.H3('Using this feature you can sort TV Shows and Movies by Title, Cast, Country, Release Year, Genre and by key words in their decription.'
-            '  To do this simply type in what you are looking for in the box that says filter data under each header!', style={'textAlign':'center','border':'2px solid black', 'background-color':'Gainsboro'}),
+    html.H3(
+        'Using this feature you can sort TV Shows and Movies by Title, Cast, Country, Release Year, Genre and by key words in their decription.'
+        '  To do this simply type in what you are looking for in the box that says filter data under each header!',
+        style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
     html.Br(),
     dash_table.DataTable(id='computed-table', columns=[{"name": i, "id": i} for i in films_table.columns],
                          data=films_table.to_dict('records'),
@@ -271,7 +282,21 @@ layout_page_1 = html.Div([
                              'height': 'auto',
                              # all three widths are needed
                              'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
-                             'whiteSpace': 'normal'})
+                             'whiteSpace': 'normal'},
+                         style_data_conditional=[
+                             {
+                                 'if': {'row_index': 'odd'},
+                                 'backgroundColor': 'rgb(230, 240, 250)'
+                             }, {
+                                 'if': {'row_index': 'even'},
+                                 'backgroundColor': 'rgb(240, 245, 250)'
+                             }
+                         ],
+                         style_header={
+                             'backgroundColor': 'rgb(110, 170, 230)',
+                             'fontWeight': 'bold'
+                         }
+                         )
 ])
 
 # Search Where the Movies Were Produced Page
@@ -283,10 +308,6 @@ layout_page_2 = html.Div([
         'To do this simply type in or search for the genre/rating you are looking for in the dropdown and select that option!',
         style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
     html.Br(),
-    html.Div([
-        dcc.Graph(id='the_graph', figure=make_figure())
-    ]),
-
     html.Div([
         # Genre
         html.H3('Genre'),
@@ -306,7 +327,11 @@ layout_page_2 = html.Div([
                      for x in ['Any'] + list(showUniqueRating()['rating'])],
             clearable=False
         )
-    ], style={'text-align': 'center'})
+    ], style={'text-align': 'center'}),
+
+    html.Div([
+        dcc.Graph(id='the_graph', figure=make_figure())
+    ])
 
 ])
 
@@ -316,7 +341,7 @@ layout_page_3 = html.Div([
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
     html.H3(
         'Using this feature you can sort and find the 10 most popular genre or rating in any available country.'
-        '  To do this simply select your country from the first dropdown and then either select Rating or Genre!',
+        '  To do this simply select your country from the dropdown menu!',
         style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
     html.Br(),
     html.P("Countries:"),
@@ -328,14 +353,17 @@ layout_page_3 = html.Div([
         clearable=False
     ),
     html.Br(),
-    dcc.Dropdown(
-        id='data_type',
-        value='genre',
-        options=[{'value': x, 'label': x}
-                 for x in ['genre', 'ratings']],
-        clearable=False
-    ),
-    dcc.Graph(id="pie-chart")
+    html.Div([
+        html.Div([
+            html.H3('Genre'),
+            dcc.Graph(id="pie-chart-genre")
+        ], className="six columns"),
+
+        html.Div([
+            html.H3('Rating'),
+            dcc.Graph(id="pie-chart-rating")
+        ], className="six columns"),
+    ], className="row")
 ])
 
 # index layout
@@ -356,7 +384,6 @@ app.validation_layout = html.Div([
               Input('url', 'pathname'))
 def display_page(pathname):
     """Return the proper page to be on.
-
     :param pathname: A dash Input pathname, gives proper path to the page."""
 
     if pathname == "/films-produced":
@@ -371,17 +398,28 @@ def display_page(pathname):
 
 # Callback for the pie chart
 @app.callback(
-    Output("pie-chart", "figure"),
-    [Input("names", "value")],
-    [Input("data_type", "value")]
+    Output("pie-chart-genre", "figure"),
+    [Input("names", "value")]
 )
-def generate_chart(names, data_type):
-    """Return a figure to the dash callback showing a pie chart of a country's most popular categories.
+def genre_generate_chart(names):
+    """Return a figure to the dash callback showing a pie chart of a country's most popular genre.
+    :param names: A dash input value, the country name."""
 
-    :param names: A dash input value, the country name.
-    :param data_type: A dash input value, the rating or genre chosen."""
+    fig = px.pie(showGenre(names, 'genre'), values='count', names='genre')
+    return fig
 
-    fig = px.pie(showGenre(names, data_type), values='count', names=data_type)
+
+# Callback for the pie chart
+@app.callback(
+    Output("pie-chart-rating", "figure"),
+    [Input("names", "value")]
+)
+def rating_generate_chart(names):
+    """Return a figure to the dash callback showing a pie chart of a country's most popular rating.
+    :param names: A dash input value, the country name."""
+
+    fig = px.pie(showGenre(names, 'rating'), values='count', names='rating',
+                 color_discrete_sequence=px.colors.sequential.Blackbody)
     return fig
 
 
@@ -394,7 +432,6 @@ def generate_chart(names, data_type):
 def update_output(input_state, input_state_2):
     """Return a figure to the dash callback showing a map of data regarding movies produced on Netflix
     based on genre and rating.
-
     :param input_state: A dash input value, the genre.
     :param input_state_2: A dash input value, the rating."""
 
