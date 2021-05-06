@@ -244,7 +244,7 @@ layout_index = html.Div([
                    href='/movies-produced', id='prediction-content')], id="left", className='three columns'),
 
         html.Div([
-            html.A(html.Button('View the most popular Genre and Rating in each country!', className='three columns',
+            html.A(html.Button('View the Most Popular Genre and Rating In Each Country!', className='three columns',
                                style={"margin-left": "187px", 'color': 'black', 'justify-content': 'center',
                                       'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
                                       'white-space': 'normal'}),
@@ -301,7 +301,7 @@ layout_page_1 = html.Div([
 
 # Search Where the Movies Were Produced Page
 layout_page_2 = html.Div([
-    html.H2('TV Shows and Movies available on Netflix Produced in Each Country',
+    html.H2('Most Popular Movies Produced In Each Country By Genre and Rating',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
     html.H3(
         'This map shows you the amount of movies produced in each country sorted by either Genre or Ratings. '
@@ -337,7 +337,7 @@ layout_page_2 = html.Div([
 
 # Most Popular Categories in Each Country
 layout_page_3 = html.Div([
-    html.H2('Most Popular Genre or Rating In Each Country',
+    html.H2('Most Popular Genre and Rating In Each Country',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
     html.H3(
         'Using this feature you can sort and find the 10 most popular genre or rating in any available country.'
