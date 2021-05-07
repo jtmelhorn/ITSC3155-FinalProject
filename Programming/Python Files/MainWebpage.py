@@ -122,7 +122,7 @@ def make_figure(genre='Any', rating='Any'):
                         hover_name="country",
                         projection='natural earth',
                         color_continuous_scale='Oranges')
-    fig.update_layout(height=900)
+    fig.update_layout(height=650)
 
     return fig
 
@@ -232,36 +232,38 @@ layout_index = html.Div([
     html.H3(
         children='Netflix has no way to see statistics about the content that is available on their platform. Someone who is interested in analyzing or creating popular content can easily fall victim to a lack of information. This may cause their creation to fail because of a Genre or Rating being unpopular in their country and culture. NetAvail allows creators to find a location that fits their niche genre as well as rating. Our app has been designed for these creators to be both intuitive and easy to understand.',
         style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
-    html.Br(), html.Br(),
+    html.Br(),
+    html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
+             style={'display': 'inline-block', 'width': '45%', 'float': 'left'}),
     html.Div([
+
+        html.Br(), html.Br(), html.Br(),
 
         html.Div([
             html.A(html.Button('View Most Popular Movies Produced In Each Country By Genre and Rating! ',
                                className='three columns',
-                               style={"margin-left": "18px", 'color': 'black',
-                                      'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
-                                      'white-space': 'normal'}),
-                   href='/movies-produced', id='prediction-content')], id="left", className='three columns'),
+                               style={"margin-left": "50px", 'color': 'black',
+                                      'background-color': 'rgb(169,169,169)', 'width': 'fit-content', 'height': '100%',
+                                      'white-space': 'pre', 'padding': '5px 35px'}),
+                   href='/movies-produced')], id="left", className='three columns'),
+        html.Br(), html.Br(), html.Br(), html.Br(),
 
         html.Div([
             html.A(html.Button('View the Most Popular Genre and Rating In Each Country!', className='three columns',
-                               style={"margin-left": "187px", 'color': 'black', 'justify-content': 'center',
-                                      'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
-                                      'white-space': 'normal'}),
+                               style={"margin-left": "50px", 'color': 'black', 'justify-content': 'center',
+                                      'background-color': 'rgb(169,169,169)', 'width': 'fit-content', 'height': 'auto',
+                                      'white-space': 'pre', 'padding': '5px 97px'}),
                    href='/popular-categories', id='prediction-content')], id="center", className='three columns'),
+        html.Br(), html.Br(), html.Br(), html.Br(),
 
         html.Div([
             html.A(html.Button('Search For TV Shows and Movies', className='three columns',
-                               style={"margin-left": "365px", 'color': 'black', 'justify-content': 'center',
-                                      'background-color': 'rgb(169,169,169)', 'width': '100%', 'height': 'auto',
-                                      'white-space': 'normal'}),
+                               style={"margin-left": "50px", 'color': 'black', 'justify-content': 'center',
+                                      'background-color': 'rgb(169,169,169)', 'width': 'fit-content', 'height': 'auto',
+                                      'white-space': 'pre', 'padding': '5px 189px'}),
                    href='/films-produced', id='prediction-content')], id="right", className='three columns'),
     ],
-        style={"display": "inline-block"}, className='row'),
-
-    html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),
-             style={'display': 'inline-block', 'float': 'left'}),
-    html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br(), html.Br()
+        style={"display": "inline-block"}, className='row')
 ])
 
 # Search for TV Shows and Movies Page
@@ -307,27 +309,30 @@ layout_page_2 = html.Div([
         'This map shows you the amount of movies produced in each country sorted by either Genre or Ratings. '
         'To do this simply type in or search for the genre/rating you are looking for in the dropdown and select that option!',
         style={'textAlign': 'center', 'border': '2px solid black', 'background-color': 'Gainsboro'}),
-    html.Br(),
+    html.Div([
+        html.H3('Genre', style={"margin-left": "370px", 'textAlign': 'left', "float": "left"}),
+        html.H3('Rating',
+                style={"margin-right": "450px", 'textAlign': 'left', "float": "right"})]),
+    html.Br(), html.Br(), html.Br(),
     html.Div([
         # Genre
-        html.H3('Genre'),
         dcc.Dropdown(
             id='input_state',
             value='Any',
             options=[{'value': x, 'label': x}
                      for x in ['Any'] + list(showUniqueGenre()['listed_in'])],
+            style={'width': '60%', "margin-left": "100px", 'title': 'Genre'},
             clearable=False
         ),
-        # Ratings
-        html.H3('Ratings'),
         dcc.Dropdown(
             id='input_state_2',
             value='Any',
             options=[{'value': x, 'label': x}
                      for x in ['Any'] + list(showUniqueRating()['rating'])],
+            style={'width': '60%', "margin-left": "0px"},
             clearable=False
         )
-    ], style={'text-align': 'center'}),
+    ], style={'text-align': 'center', 'display': 'flex'}),
 
     html.Div([
         dcc.Graph(id='the_graph', figure=make_figure())
@@ -406,6 +411,7 @@ def genre_generate_chart(names):
     :param names: A dash input value, the country name."""
 
     fig = px.pie(showGenre(names, 'genre'), values='count', names='genre')
+    fig.update_traces(textposition='inside', textinfo='percent+label')
     return fig
 
 
@@ -420,6 +426,7 @@ def rating_generate_chart(names):
 
     fig = px.pie(showGenre(names, 'rating'), values='count', names='rating',
                  color_discrete_sequence=px.colors.sequential.Blackbody)
+    fig.update_traces(textposition='inside', textinfo='percent+label')
     return fig
 
 
@@ -439,7 +446,7 @@ def update_output(input_state, input_state_2):
         raise PreventUpdate
     else:
         fig = make_figure(input_state, input_state_2)
-        fig.update_layout(height=900)
+        fig.update_layout(height=650)
         fig.update_layout()
         return fig
 
