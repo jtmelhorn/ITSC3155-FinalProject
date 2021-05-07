@@ -240,11 +240,11 @@ layout_index = html.Div([
         html.Br(), html.Br(), html.Br(),
 
         html.Div([
-            html.A(html.Button('View Most Popular Movies Produced In Each Country By Genre and Rating! ',
+            html.A(html.Button('View Number of Movies Produced In Each Country By Genre and Rating! ',
                                className='three columns',
                                style={"margin-left": "50px", 'color': 'black',
                                       'background-color': 'rgb(169,169,169)', 'width': 'fit-content', 'height': '100%',
-                                      'white-space': 'pre', 'padding': '5px 35px'}),
+                                      'white-space': 'pre', 'padding': '5px 47px'}),
                    href='/movies-produced')], id="left", className='three columns'),
         html.Br(), html.Br(), html.Br(), html.Br(),
 
@@ -303,7 +303,7 @@ layout_page_1 = html.Div([
 
 # Search Where the Movies Were Produced Page
 layout_page_2 = html.Div([
-    html.H2('Most Popular Movies Produced In Each Country By Genre and Rating',
+    html.H2('Number of Movies Produced In Each Country By Genre and Rating',
             style={'textAlign': 'center', 'background-color': 'rgb(0,0,0)', 'margin-top': '0px', 'color': 'White'}),
     html.H3(
         'This map shows you the amount of movies produced in each country sorted by either Genre or Ratings. '
